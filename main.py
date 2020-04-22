@@ -1,20 +1,31 @@
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import requests
 import pyfakewebcam
-from PIL import Image, ImageDraw, ImageFont
-from colour import Color
 import tensorflow as tf
 import cv2
 import numpy as np
 import argparse
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-vh', '--height',     help="Video height (default 640)", default='640', type=int, required=False)
 ap.add_argument('-vw', '--width',      help="Video width (default 480)", default='480', type=int, required=False)
 ap.add_argument('-wc', '--webcam',     help="Webcam device (default /dev/video0)", default='/dev/video0', type=str, required=False)
 ap.add_argument('-fc', '--fakewebcam', help="Fake Webcam device (default /dev/video20)", default='/dev/video20', type=str, required=False)
-ap.add_argument('-p',  '--pixelscale', help="Pixel scale (default 0.15)", default='0.15', type=float, required=False)
+ap.add_argument('-p',  '--pixelscale', help="Pixel scale (default 0.15)", default='0.1', type=float, required=False)
 ap.add_argument('-c',  '--contrast',   help="Contrast adjustment (default 1)", default='1', type=float, required=False)
+ap.add_argument('-u',  '--usecaca',   help="Use libcaca for ASCII transformation", default='false', nargs='?', const=True, type=str2bool, required=False)
 
 args = vars(ap.parse_args())
 
@@ -27,81 +38,10 @@ FAKE_WEBCAM = args['fakewebcam']
 SC = args['pixelscale']
 GCF = args['contrast']
 
-'''
-MODEL = 'deeplabv3_mnv2_pascal_trainval.pb'
-SIZE = [640, 480]
-FPS = 20
-INPUT_DEVICE = '/dev/video0'
-FAKE_WEBCAM = '/dev/video20'
-SC = 0.15  # pixel sampling rate in width
-GCF = 1  # contrast adjustment
-'''
-
 ############################################
 
 global sess
 global detection_graph
-
-
-def asciiart(img, SC, GCF, color1='black', color2='blue', bgcolor='white'):
-    # The array of ascii symbols from white to black
-    chars = np.asarray(list(' .,:irs?@9B&#'))
-
-    # Load the fonts and then get the the height and width of a typical symbol
-    # You can use different fonts here
-    font = ImageFont.load_default()
-    letter_width = font.getsize("x")[0]
-    letter_height = font.getsize("x")[1]
-
-    WCF = letter_height / letter_width
-
-    # open the input file
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = Image.fromarray(img)
-
-    # Based on the desired output image size, calculate how many ascii letters are needed on the width and height
-    widthByLetter = round(img.size[0] * SC * WCF)
-    heightByLetter = round(img.size[1] * SC)
-    S = (widthByLetter, heightByLetter)
-
-    # Resize the image based on the symbol width and height
-    img = img.resize(S)
-
-    # Get the RGB color values of each sampled pixel point and convert them to graycolor using the average method.
-    # Refer to https://www.johndcook.com/blog/2009/08/24/algorithms-convert-color-grayscale/ to know about the algorithm
-    img = np.sum(np.asarray(img), axis=2)
-
-    # Normalize the results, enhance and reduce the brightness contrast.
-    # Map grayscale values to bins of symbols
-    img -= img.min()
-    img = (1.0 - img / img.max()) ** GCF * (chars.size - 1)
-
-    # Generate the ascii art symbols
-    lines = ("\n".join(("".join(r) for r in chars[img.astype(int)]))).split("\n")
-
-    # Create gradient color bins
-    nbins = len(lines)
-    colorRange = list(Color(color1).range_to(Color(color2), nbins))
-
-    # Create an image object, set its width and height
-    newImg_width = letter_width * widthByLetter
-    newImg_height = letter_height * heightByLetter
-    newImg = Image.new("RGBA", (newImg_width, newImg_height), bgcolor)
-    draw = ImageDraw.Draw(newImg)
-
-    # Print symbols to image
-    leftpadding = 0
-    y = 0
-    lineIdx = 0
-    for line in lines:
-        color = colorRange[lineIdx]
-        lineIdx += 1
-
-        draw.text((leftpadding, y), line, color.hex, font=font)
-        y += letter_height
-
-    # Save the image file
-    return  np.asarray(newImg)
 
 
 def get_frame(cap):
@@ -170,6 +110,11 @@ def get_mask(image):
 
 ################################################################################################################
 
+print(args)
+if args['usecaca']:
+    from acii_caca import asciiart
+else:
+    from acii import asciiart
 
 pre_load(MODEL)
 

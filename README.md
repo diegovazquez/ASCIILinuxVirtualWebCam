@@ -15,6 +15,9 @@ Well, MS Teams dont have filters... so i implement my own.
 5) Output   
 ![alt text](05_output.png)
 
+6) Output w/libcaca  
+![alt text](05_output_caca.png)
+
 Result:   
 [![Video Example](https://img.icons8.com/small/56/000000/youtube.png)](https://youtu.be/BaED6jJnmSE)
 
@@ -36,8 +39,10 @@ Install conda
 
 Install dependencies
 
-    conda install tensorflow-gpu opencv pillow
+    sudo apt install v4l2loopback-dkms libcaca0
+    conda install tensorflow-gpu opencv pillow  
     pip install pyfakewebcam colour
+
 
 # Run
 
@@ -50,7 +55,7 @@ Install dependencies
 # Options
 
     usage: main.py [-h] [-vh HEIGHT] [-vw WIDTH] [-wc WEBCAM] [-fc FAKEWEBCAM]
-                   [-p PIXELSCALE] [-c CONTRAST]
+                   [-p PIXELSCALE] [-c CONTRAST] [-u [USECACA]]
     
     optional arguments:
       -h, --help            show this help message and exit
@@ -66,3 +71,5 @@ Install dependencies
                             Pixel scale (default 0.15)
       -c CONTRAST, --contrast CONTRAST
                             Contrast adjustment (default 1)
+      -u [USECACA], --usecaca [USECACA]
+                            Use libcaca for ASCII transformation
