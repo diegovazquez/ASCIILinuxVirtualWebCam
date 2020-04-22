@@ -110,7 +110,22 @@ def get_mask(image):
 
 ################################################################################################################
 
-print(args)
+MODEL = 'deeplabv3_mnv2_pascal_trainval.pb'
+SIZE = [args['height'], args['width']]
+INPUT_DEVICE = args['webcam']
+FAKE_WEBCAM = args['fakewebcam']
+SC = args['pixelscale']
+GCF = args['contrast']
+
+print("Model File\t\t" + str(MODEL))
+print("Camera Size\t\t" + str(SIZE))
+print("Input Webcam\t\t" + str(INPUT_DEVICE))
+print("Fake Webcam Dev\t\t" + str(FAKE_WEBCAM))
+print("Scale\t\t\t" + str(SC))
+print("Contrast\t\t" + str(GCF))
+print("Use caca\t\t" + str(args['usecaca']))
+
+
 if args['usecaca']:
     from acii_caca import asciiart
 else:
