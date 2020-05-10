@@ -73,3 +73,5 @@ Install dependencies
                             Contrast adjustment (default 1)
       -u [USECACA], --usecaca [USECACA]
                             Use libcaca for ASCII transformation
+      -bg BACKGROUND, --background BACKGROUND
+                            Background image path

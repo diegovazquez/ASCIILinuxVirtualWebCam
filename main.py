@@ -27,7 +27,7 @@ ap.add_argument('-fc', '--fakewebcam', help="Fake Webcam device (default /dev/vi
 ap.add_argument('-p',  '--pixelscale', help="Pixel scale (default 0.15)", default='0.1', type=float, required=False)
 ap.add_argument('-c',  '--contrast',   help="Contrast adjustment (default 1)", default='1', type=float, required=False)
 ap.add_argument('-u',  '--usecaca',    help="Use libcaca for ASCII transformation", default='false', nargs='?', const=True, type=str2bool, required=False)
-ap.add_argument('-bg', '--background', help="Backgroid image path", default='background.jpeg', type=str, required=False)
+ap.add_argument('-bg', '--background', help="Background image path", default='background.jpeg', type=str, required=False)
 
 args = vars(ap.parse_args())
 
