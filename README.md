@@ -75,3 +75,12 @@ Install dependencies
                             Use libcaca for ASCII transformation
       -bg BACKGROUND, --background BACKGROUND
                             Background image path
+
+# Changelog
+
+* 2020-05-10  
+    * [Added] Custom Background implementation
+* 2020-04-22
+    * [Added] LibCaca implementation
+* 2020-04-21  
+    * [Added] Initial version
