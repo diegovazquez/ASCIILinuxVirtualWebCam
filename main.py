@@ -72,17 +72,17 @@ def get_frame(cap):
     mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
     mask = cv2.erode(mask, np.ones((20, 20), np.uint8), iterations=1)
 
-    if not backgroundImage:
-        frame = cv2.bitwise_not(frame)
-        frame = cv2.bitwise_and(frame, mask)
-        frame = cv2.bitwise_not(frame)
-    else:
+    if file.exists():
         alpha = mask.astype(float) / 255
         foreground = cv2.multiply(alpha, frame, dtype=cv2.CV_32F)
         background = cv2.multiply(1.0 - alpha, backgroundImage, dtype=cv2.CV_32F)
         frame = cv2.add(foreground, background)
         frame = np.uint8(frame)
-
+    else:
+        frame = cv2.bitwise_not(frame)
+        frame = cv2.bitwise_and(frame, mask)
+        frame = cv2.bitwise_not(frame)
+    
     frame = asciiart(frame, SC, GCF)
     frame = cv2.resize(frame, (width, height))
     return frame
