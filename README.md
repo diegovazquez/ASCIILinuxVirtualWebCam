@@ -14,9 +14,11 @@ Well, MS Teams dont have filters... so i implement my own.
 ![alt text](04_input_mask.png)
 5) Output   
 ![alt text](05_output.png)
-
 6) Output w/libcaca  
 ![alt text](05_output_caca.png)
+7) Output w/libcaca + Custom Background   
+![alt text](05_wbg.png)![alt text](05_output_caca_wbg.png)
+
 
 Result:   
 [![Video Example](https://img.icons8.com/small/56/000000/youtube.png)](https://youtu.be/BaED6jJnmSE)
