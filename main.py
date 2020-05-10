@@ -6,6 +6,7 @@ import tensorflow as tf
 import cv2
 import numpy as np
 import argparse
+import pathlib
 
 
 def str2bool(v):
@@ -21,11 +22,12 @@ def str2bool(v):
 ap = argparse.ArgumentParser()
 ap.add_argument('-vh', '--height',     help="Video height (default 640)", default='640', type=int, required=False)
 ap.add_argument('-vw', '--width',      help="Video width (default 480)", default='480', type=int, required=False)
-ap.add_argument('-wc', '--webcam',     help="Webcam device (default /dev/video0)", default='/dev/video0', type=str, required=False)
+ap.add_argument('-wc', '--webcam',     help="Webcam device (default /dev/video1)", default='/dev/video1', type=str, required=False)
 ap.add_argument('-fc', '--fakewebcam', help="Fake Webcam device (default /dev/video20)", default='/dev/video20', type=str, required=False)
 ap.add_argument('-p',  '--pixelscale', help="Pixel scale (default 0.15)", default='0.1', type=float, required=False)
 ap.add_argument('-c',  '--contrast',   help="Contrast adjustment (default 1)", default='1', type=float, required=False)
-ap.add_argument('-u',  '--usecaca',   help="Use libcaca for ASCII transformation", default='false', nargs='?', const=True, type=str2bool, required=False)
+ap.add_argument('-u',  '--usecaca',    help="Use libcaca for ASCII transformation", default='false', nargs='?', const=True, type=str2bool, required=False)
+ap.add_argument('-bg', '--background', help="Backgroid image path", default='background.jpeg', type=str, required=False)
 
 args = vars(ap.parse_args())
 
@@ -37,9 +39,18 @@ INPUT_DEVICE = args['webcam']
 FAKE_WEBCAM = args['fakewebcam']
 SC = args['pixelscale']
 GCF = args['contrast']
+BGIMGPATH = args['background']
 
 ############################################
 
+file = pathlib.Path(BGIMGPATH)
+if file.exists():
+    backgroundImage = cv2.imread(BGIMGPATH)
+else:
+    backgroundImage = False
+    print("Background not found")
+
+############################################
 global sess
 global detection_graph
 
@@ -59,10 +70,19 @@ def get_frame(cap):
 
     # post-process mask and frame
     mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
-    mask = cv2.erode(mask, np.ones((20,20), np.uint8) , iterations=1)
-    frame = cv2.bitwise_not(frame)
-    frame = cv2.bitwise_and(frame, mask)
-    frame = cv2.bitwise_not(frame)
+    mask = cv2.erode(mask, np.ones((20, 20), np.uint8), iterations=1)
+
+    if not backgroundImage:
+        frame = cv2.bitwise_not(frame)
+        frame = cv2.bitwise_and(frame, mask)
+        frame = cv2.bitwise_not(frame)
+    else:
+        alpha = mask.astype(float) / 255
+        foreground = cv2.multiply(alpha, frame, dtype=cv2.CV_32F)
+        background = cv2.multiply(1.0 - alpha, backgroundImage, dtype=cv2.CV_32F)
+        frame = cv2.add(foreground, background)
+        frame = np.uint8(frame)
+
     frame = asciiart(frame, SC, GCF)
     frame = cv2.resize(frame, (width, height))
     return frame
@@ -110,13 +130,6 @@ def get_mask(image):
 
 ################################################################################################################
 
-MODEL = 'deeplabv3_mnv2_pascal_trainval.pb'
-SIZE = [args['height'], args['width']]
-INPUT_DEVICE = args['webcam']
-FAKE_WEBCAM = args['fakewebcam']
-SC = args['pixelscale']
-GCF = args['contrast']
-
 print("Model File\t\t" + str(MODEL))
 print("Camera Size\t\t" + str(SIZE))
 print("Input Webcam\t\t" + str(INPUT_DEVICE))
@@ -124,6 +137,7 @@ print("Fake Webcam Dev\t\t" + str(FAKE_WEBCAM))
 print("Scale\t\t\t" + str(SC))
 print("Contrast\t\t" + str(GCF))
 print("Use caca\t\t" + str(args['usecaca']))
+print("Bg Image\t\t" + str(BGIMGPATH))
 
 
 if args['usecaca']:
